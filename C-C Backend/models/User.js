@@ -33,6 +33,11 @@ const userSchema = new mongoose.Schema({
     default: ""
   },
 
+  preferredLocation: {
+    type: String,
+    default: ""
+  },
+
   skills: {
     type: [String],
     default: []

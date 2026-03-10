@@ -12,6 +12,7 @@ exports.updateProfile = async (req, res) => {
     const {
       mobile,
       preferredRole,
+      preferredLocation,
       skills,
       experience,
       qualification,
@@ -24,6 +25,7 @@ exports.updateProfile = async (req, res) => {
       {
         mobile,
         preferredRole,
+        preferredLocation,
         skills,
         experience,
         qualification,
