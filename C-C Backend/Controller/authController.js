@@ -92,7 +92,7 @@ exports.login = async (req, res) => {
     // Create JWT Token
     const token = jwt.sign(
       { id: user._id },
-      "SECRET_KEY",
+      process.env.JWT_SECRET,  //Login funtion
       { expiresIn: "1d" }
     );
 
@@ -142,6 +142,8 @@ exports.getCurrentUser = async (req, res) => {
 
 };
 
+// ---------------- GOOGLE AUTHENTICATION ----------------
+
 exports.googleAuth = async (req, res) => {
 
   try {
@@ -162,7 +164,7 @@ exports.googleAuth = async (req, res) => {
 
     const token = jwt.sign(
       { id: user._id },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET, //Google auth funtion
       { expiresIn: "1d" }
     );
 
