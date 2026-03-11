@@ -99,14 +99,16 @@ function Welcome() {
         }
 
         .logo-icon {
-          width: 32px;
-          height: 32px;
-          background: linear-gradient(135deg, #6c63ff, #63b3ff);
+          width: 34px;
+          height: 34px;
           border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 16px;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+        .logo-img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
         }
 
         .nav-actions {
@@ -384,7 +386,7 @@ function Welcome() {
         {/* Navbar */}
         <nav className="navbar">
           <div className="nav-logo">
-            <div className="logo-icon">🧭</div>
+            <div className="logo-icon"><img src="/logo.jpg" alt="Career Companion" className="logo-img" /></div>
             <span>Career Companion</span>
           </div>
           <div className="nav-actions">

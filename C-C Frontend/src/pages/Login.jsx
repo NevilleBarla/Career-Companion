@@ -304,7 +304,7 @@ function Login() {
           {/* Header */}
           <div className="card-header">
             <div className="brand-badge">
-              <div className="brand-dot" />
+              <img src="/logo.jpg" alt="Career Companion" style={{width:"28px",height:"28px",objectFit:"contain",borderRadius:"6px"}} />
               <span className="brand-text">Career Companion</span>
             </div>
             <h1 className="page-title">

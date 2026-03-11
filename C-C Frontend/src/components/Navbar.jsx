@@ -12,8 +12,6 @@ function Navbar({ sidebarOpen, toggleSidebar }) {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("resumeAnalysis");
-    localStorage.removeItem("availableJobsCache");
     window.location.href = "/login";
   };
 
@@ -146,15 +144,19 @@ function Navbar({ sidebarOpen, toggleSidebar }) {
         }
 
         .logo-icon {
-          width: 30px;
-          height: 30px;
-          background: linear-gradient(135deg, #6c63ff, #63b3ff);
+          width: 34px;
+          height: 34px;
           border-radius: 8px;
+          overflow: hidden;
+          flex-shrink: 0;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 15px;
-          flex-shrink: 0;
+        }
+        .logo-img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
         }
 
         .nav-right {
@@ -303,7 +305,9 @@ function Navbar({ sidebarOpen, toggleSidebar }) {
           </button>
 
           <div className="nav-logo">
-            <div className="logo-icon">🧭</div>
+            <div className="logo-icon">
+              <img src="/logo.jpg" alt="Career Companion" className="logo-img" />
+            </div>
             Career Companion
           </div>
 
