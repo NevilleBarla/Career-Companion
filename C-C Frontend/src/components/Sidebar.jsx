@@ -4,6 +4,7 @@ const navItems = [
   { to: "/dashboard/home", icon: "🏠", label: "Home" },
   { to: "/dashboard/recommended-jobs", icon: "🎯", label: "Recommended Jobs" },
   { to: "/dashboard/available-jobs", icon: "💼", label: "Available Jobs" },
+  { to: "/dashboard/tracker", icon: "📊", label: "App Tracker" },
   { to: "/dashboard/resume", icon: "📄", label: "Resume Analyzer" },
   { to: "/dashboard/profile", icon: "👤", label: "Profile" },
 ];

@@ -8,6 +8,7 @@ import RecommendedJobs from "./dashboard/RecommendedJobs";
 import AvailableJobs from "./dashboard/AvailableJobs";
 import ResumeAnalyzer from "./dashboard/ResumeAnalyzer";
 import Profile from "./dashboard/Profile";
+import ApplicationTracker from "./dashboard/ApplicationTracker";
 
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -43,7 +44,9 @@ function Dashboard() {
             <Route path="recommended-jobs" element={<RecommendedJobs />} />
             <Route path="available-jobs" element={<AvailableJobs />} />
             <Route path="resume" element={<ResumeAnalyzer />} />
+            <Route path="tracker" element={<ApplicationTracker />} />
             <Route path="profile" element={<Profile />} />
+              
           </Routes>
         </div>
 

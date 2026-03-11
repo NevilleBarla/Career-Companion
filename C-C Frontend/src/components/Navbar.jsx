@@ -12,12 +12,14 @@ function Navbar({ sidebarOpen, toggleSidebar }) {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("resumeAnalysis");
+    localStorage.removeItem("availableJobsCache");
     window.location.href = "/login";
   };
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/notifications`, {
+      const res = await axios.get(`${BASE_URL}/api/notifications/all`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotifications(res.data);
@@ -40,6 +42,9 @@ function Navbar({ sidebarOpen, toggleSidebar }) {
     };
     fetchUser();
     fetchNotifications();
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const toggleNotifications = async () => {
@@ -48,7 +53,7 @@ function Navbar({ sidebarOpen, toggleSidebar }) {
       await fetchNotifications();
       try {
         await axios.put(
-          `${BASE_URL}/api/notifications/mark-all-seen`,
+          `${BASE_URL}/api/notifications/seen-all`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
