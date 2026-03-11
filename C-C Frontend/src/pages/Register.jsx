@@ -11,8 +11,10 @@ function Register() {
   const [email, setEmail] = useState(location.state?.email || "");
   const [password, setPassword] = useState("");
   const [mobile, setMobile] = useState("");
-  const [preferredRole, setPreferredRole] = useState("");
-  const [skills, setSkills] = useState("");
+  const [preferredRole, setPreferredRole] = useState([]);
+  const [roleInput, setRoleInput] = useState("");
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  const [skillInput, setSkillInput] = useState("");
   const [experience, setExperience] = useState("");
   const [qualification, setQualification] = useState("");
   const [gender, setGender] = useState("");
@@ -32,8 +34,8 @@ function Register() {
     else if (password.length < 6) errors.password = "Password must be at least 6 characters";
     if (!mobile.trim()) errors.mobile = "Mobile number is required";
     else if (!/^\d{10}$/.test(mobile.replace(/\s/g, ""))) errors.mobile = "Enter a valid 10-digit mobile number";
-    if (!preferredRole.trim()) errors.preferredRole = "Preferred role is required";
-    if (!skills.trim()) errors.skills = "At least one skill is required";
+    if (preferredRole.length === 0) errors.preferredRole = "Preferred role is required";
+    if (selectedSkills.length === 0) errors.skills = "At least one skill is required";
     if (!experience.trim()) errors.experience = "Experience is required";
     if (!qualification.trim()) errors.qualification = "Qualification is required";
     if (!gender.trim()) errors.gender = "Gender is required";
@@ -60,8 +62,8 @@ function Register() {
         email,
         password,
         mobile,
-        preferredRole,
-        skills: skills.split(",").map((s) => s.trim()).filter(Boolean),
+        preferredRole: preferredRole.join(", "),
+        skills: selectedSkills,
         experience,
         qualification,
         gender,
@@ -83,6 +85,70 @@ function Register() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ---- Job Roles & Skills Data ----
+  const JOB_ROLES = [
+    "Frontend Developer", "Backend Developer", "Full Stack Developer",
+    "Mobile Developer", "Android Developer", "iOS Developer",
+    "DevOps Engineer", "Cloud Engineer", "Site Reliability Engineer",
+    "Data Engineer", "Data Scientist", "Machine Learning Engineer",
+    "AI Engineer", "Blockchain Developer", "Software Engineer",
+    "QA Engineer", "Security Engineer", "UI Designer", "UX Designer",
+    "UI/UX Designer", "Product Designer", "Graphic Designer",
+    "Product Manager", "Project Manager", "Scrum Master", "Business Analyst",
+    "Technical Lead", "Engineering Manager", "Data Analyst",
+    "Business Intelligence Analyst", "Database Administrator",
+    "Digital Marketing Specialist", "SEO Specialist", "Content Writer",
+    "Social Media Manager", "Sales Executive", "Business Development Manager",
+    "HR Manager", "Recruiter", "Financial Analyst", "Accountant",
+    "Technical Support Engineer", "IT Administrator",
+  ];
+
+  const SKILLS_LIST = [
+    "React", "Angular", "Vue.js", "Next.js", "TypeScript", "JavaScript",
+    "HTML", "CSS", "Tailwind CSS", "Bootstrap", "Redux", "GraphQL",
+    "Node.js", "Express.js", "Python", "Django", "FastAPI", "Java",
+    "Spring Boot", "PHP", "Laravel", "Go", "Rust", "C++", "C#", ".NET",
+    "Kotlin", "Swift", "MongoDB", "MySQL", "PostgreSQL", "Redis",
+    "Firebase", "Docker", "Kubernetes", "AWS", "Azure", "Google Cloud",
+    "CI/CD", "Jenkins", "GitHub Actions", "Linux", "React Native",
+    "Flutter", "Machine Learning", "Deep Learning", "TensorFlow",
+    "PyTorch", "Pandas", "NumPy", "Power BI", "Tableau", "Git",
+    "GitHub", "Jira", "Figma", "Postman", "REST API", "Microservices",
+    "System Design", "Agile", "Scrum",
+  ];
+
+  const toggleRole = (role) => {
+    setPreferredRole(prev =>
+      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
+    );
+    if (fieldErrors.preferredRole) setFieldErrors(p => ({ ...p, preferredRole: "" }));
+  };
+
+  const toggleSkill = (skill) => {
+    setSelectedSkills(prev =>
+      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
+    );
+    if (fieldErrors.skills) setFieldErrors(p => ({ ...p, skills: "" }));
+  };
+
+  const addCustomRole = () => {
+    const val = roleInput.trim();
+    if (val && !preferredRole.includes(val)) {
+      setPreferredRole(prev => [...prev, val]);
+      if (fieldErrors.preferredRole) setFieldErrors(p => ({ ...p, preferredRole: "" }));
+    }
+    setRoleInput("");
+  };
+
+  const addCustomSkill = () => {
+    const val = skillInput.trim();
+    if (val && !selectedSkills.includes(val)) {
+      setSelectedSkills(prev => [...prev, val]);
+      if (fieldErrors.skills) setFieldErrors(p => ({ ...p, skills: "" }));
+    }
+    setSkillInput("");
   };
 
   const inputStyle = (field) => ({
@@ -128,8 +194,6 @@ function Register() {
     { label: "Email Address", value: email, setter: setEmail, placeholder: "john@example.com", id: "email", type: "email" },
     { label: "Password", value: password, setter: setPassword, placeholder: "Min. 6 characters", id: "password", type: "password" },
     { label: "Mobile Number", value: mobile, setter: setMobile, placeholder: "10-digit number", id: "mobile", type: "text" },
-    { label: "Preferred Role", value: preferredRole, setter: setPreferredRole, placeholder: "e.g. Frontend Developer", id: "preferredRole", type: "text" },
-    { label: "Skills", value: skills, setter: setSkills, placeholder: "React, Node.js, Python...", id: "skills", type: "text" },
     { label: "Past Experience", value: experience, setter: setExperience, placeholder: "e.g. 2 years at TCS", id: "experience", type: "text" },
     { label: "Qualification", value: qualification, setter: setQualification, placeholder: "e.g. B.Tech Computer Science", id: "qualification", type: "text" },
 
@@ -292,6 +356,69 @@ function Register() {
         input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
         select option { background: #1a1a2e; color: white; }
 
+        .multi-section { margin-bottom: 0; }
+        .multi-section-label {
+          display: block; font-size: 11px; font-weight: 600;
+          letter-spacing: 0.08em; color: #666; text-transform: uppercase;
+          margin-bottom: 8px; font-family: 'DM Sans', sans-serif;
+        }
+        .multi-custom-input {
+          display: flex; gap: 8px; margin-bottom: 10px;
+        }
+        .multi-custom-input input {
+          flex: 1; padding: 10px 14px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 8px; color: white;
+          font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none;
+        }
+        .multi-custom-input input:focus {
+          border-color: #6c63ff;
+        }
+        .multi-add-btn {
+          padding: 10px 16px;
+          background: rgba(108,99,255,0.15);
+          border: 1px solid rgba(108,99,255,0.3);
+          border-radius: 8px; color: #a09bff;
+          font-size: 13px; font-weight: 600;
+          font-family: 'DM Sans', sans-serif; cursor: pointer;
+          transition: all 0.2s; white-space: nowrap;
+        }
+        .multi-add-btn:hover { background: rgba(108,99,255,0.25); }
+        .chips-wrap {
+          display: flex; flex-wrap: wrap; gap: 7px;
+          margin-bottom: 10px; min-height: 32px;
+        }
+        .chip-selected {
+          display: inline-flex; align-items: center; gap: 5px;
+          padding: 5px 12px;
+          background: rgba(108,99,255,0.15);
+          border: 1px solid rgba(108,99,255,0.35);
+          border-radius: 100px; font-size: 12px; font-weight: 500;
+          color: #a09bff; font-family: 'DM Sans', sans-serif; cursor: pointer;
+          transition: all 0.2s;
+        }
+        .chip-selected:hover { background: rgba(255,80,80,0.1); border-color: rgba(255,80,80,0.3); color: #ff6b6b; }
+        .chip-option {
+          display: inline-flex; align-items: center;
+          padding: 5px 12px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 100px; font-size: 12px;
+          color: #555; font-family: 'DM Sans', sans-serif; cursor: pointer;
+          transition: all 0.2s;
+        }
+        .chip-option:hover { background: rgba(108,99,255,0.1); border-color: rgba(108,99,255,0.25); color: #a09bff; }
+        .options-scroll {
+          max-height: 130px; overflow-y: auto;
+          display: flex; flex-wrap: wrap; gap: 7px;
+          padding: 4px 2px;
+        }
+        .options-scroll::-webkit-scrollbar { width: 4px; }
+        .options-scroll::-webkit-scrollbar-track { background: transparent; }
+        .options-scroll::-webkit-scrollbar-thumb { background: rgba(108,99,255,0.3); border-radius: 4px; }
+        .multi-full { grid-column: 1 / -1; }
+
         @media (max-width: 600px) {
           .register-card { padding: 32px 24px; }
           .form-grid { grid-template-columns: 1fr; }
@@ -350,6 +477,65 @@ function Register() {
                 )}
               </div>
             ))}
+
+
+            {/* Preferred Role Multi-Select */}
+            <div className="multi-section multi-full">
+              <label className="multi-section-label">Preferred Role(s) *</label>
+              {preferredRole.length > 0 && (
+                <div className="chips-wrap">
+                  {preferredRole.map(r => (
+                    <span key={r} className="chip-selected" onClick={() => toggleRole(r)}>
+                      {r} ✕
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="multi-custom-input">
+                <input
+                  placeholder="Type a custom role and press Add..."
+                  value={roleInput}
+                  onChange={e => setRoleInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && addCustomRole()}
+                />
+                <button className="multi-add-btn" onClick={addCustomRole}>+ Add</button>
+              </div>
+              <div className="options-scroll">
+                {JOB_ROLES.filter(r => !preferredRole.includes(r)).map(r => (
+                  <span key={r} className="chip-option" onClick={() => toggleRole(r)}>+ {r}</span>
+                ))}
+              </div>
+              {fieldErrors.preferredRole && <span className="field-error">⚠ {fieldErrors.preferredRole}</span>}
+            </div>
+
+            {/* Skills Multi-Select */}
+            <div className="multi-section multi-full">
+              <label className="multi-section-label">Skills *</label>
+              {selectedSkills.length > 0 && (
+                <div className="chips-wrap">
+                  {selectedSkills.map(s => (
+                    <span key={s} className="chip-selected" onClick={() => toggleSkill(s)}>
+                      {s} ✕
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="multi-custom-input">
+                <input
+                  placeholder="Type a custom skill and press Add..."
+                  value={skillInput}
+                  onChange={e => setSkillInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && addCustomSkill()}
+                />
+                <button className="multi-add-btn" onClick={addCustomSkill}>+ Add</button>
+              </div>
+              <div className="options-scroll">
+                {SKILLS_LIST.filter(s => !selectedSkills.includes(s)).map(s => (
+                  <span key={s} className="chip-option" onClick={() => toggleSkill(s)}>+ {s}</span>
+                ))}
+              </div>
+              {fieldErrors.skills && <span className="field-error">⚠ {fieldErrors.skills}</span>}
+            </div>
 
             {/* Gender Dropdown */}
             <div className="field-group" key="gender">

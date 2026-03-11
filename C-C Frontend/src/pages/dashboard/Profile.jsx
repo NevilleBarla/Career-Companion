@@ -4,9 +4,11 @@ import BASE_URL from "../../config";
 
 function Profile() {
   const [user, setUser] = useState(null);
-  const [preferredRole, setPreferredRole] = useState("");
+  const [preferredRole, setPreferredRole] = useState([]);
+  const [roleInput, setRoleInput] = useState("");
   const [preferredLocation, setPreferredLocation] = useState("");
-  const [skills, setSkills] = useState("");
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  const [skillInput, setSkillInput] = useState("");
   const [mobile, setMobile] = useState("");
   const [experience, setExperience] = useState("");
   const [qualification, setQualification] = useState("");
@@ -26,9 +28,9 @@ function Profile() {
         });
         const u = res.data;
         setUser(u);
-        setPreferredRole(u.preferredRole || "");
+        setPreferredRole(u.preferredRole ? u.preferredRole.split(",").map(s => s.trim()).filter(Boolean) : []);
         setPreferredLocation(u.preferredLocation || "");
-        setSkills(u.skills ? u.skills.join(", ") : "");
+        setSelectedSkills(u.skills || []);
         setMobile(u.mobile || "");
         setExperience(u.experience || "");
         setQualification(u.qualification || "");
@@ -48,9 +50,9 @@ function Profile() {
       await axios.put(
         `${BASE_URL}/api/user/profile`,
         {
-          preferredRole,
+          preferredRole: preferredRole.join(", "),
           preferredLocation,
-          skills: skills.split(",").map((s) => s.trim()).filter(Boolean),
+          skills: selectedSkills,
           mobile,
           experience,
           qualification,
@@ -65,6 +67,62 @@ function Profile() {
     } finally {
       setLoading(false);
     }
+  };
+
+
+  // ---- Job Roles & Skills Data ----
+  const JOB_ROLES = [
+    "Frontend Developer", "Backend Developer", "Full Stack Developer",
+    "Mobile Developer", "Android Developer", "iOS Developer",
+    "DevOps Engineer", "Cloud Engineer", "Site Reliability Engineer",
+    "Data Engineer", "Data Scientist", "Machine Learning Engineer",
+    "AI Engineer", "Blockchain Developer", "Software Engineer",
+    "QA Engineer", "Security Engineer", "UI Designer", "UX Designer",
+    "UI/UX Designer", "Product Designer", "Graphic Designer",
+    "Product Manager", "Project Manager", "Scrum Master", "Business Analyst",
+    "Technical Lead", "Engineering Manager", "Data Analyst",
+    "Database Administrator", "Digital Marketing Specialist", "SEO Specialist",
+    "Content Writer", "Social Media Manager", "Sales Executive",
+    "Business Development Manager", "HR Manager", "Recruiter",
+    "Financial Analyst", "Accountant", "Technical Support Engineer", "IT Administrator",
+  ];
+
+  const SKILLS_LIST = [
+    "React", "Angular", "Vue.js", "Next.js", "TypeScript", "JavaScript",
+    "HTML", "CSS", "Tailwind CSS", "Bootstrap", "Redux", "GraphQL",
+    "Node.js", "Express.js", "Python", "Django", "FastAPI", "Java",
+    "Spring Boot", "PHP", "Laravel", "Go", "Rust", "C++", "C#", ".NET",
+    "Kotlin", "Swift", "MongoDB", "MySQL", "PostgreSQL", "Redis",
+    "Firebase", "Docker", "Kubernetes", "AWS", "Azure", "Google Cloud",
+    "CI/CD", "Jenkins", "GitHub Actions", "Linux", "React Native",
+    "Flutter", "Machine Learning", "Deep Learning", "TensorFlow",
+    "PyTorch", "Pandas", "NumPy", "Power BI", "Tableau", "Git",
+    "GitHub", "Jira", "Figma", "Postman", "REST API", "Microservices",
+    "System Design", "Agile", "Scrum",
+  ];
+
+  const toggleRole = (role) => {
+    setPreferredRole(prev =>
+      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
+    );
+  };
+
+  const toggleSkill = (skill) => {
+    setSelectedSkills(prev =>
+      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
+    );
+  };
+
+  const addCustomRole = () => {
+    const val = roleInput.trim();
+    if (val && !preferredRole.includes(val)) setPreferredRole(prev => [...prev, val]);
+    setRoleInput("");
+  };
+
+  const addCustomSkill = () => {
+    const val = skillInput.trim();
+    if (val && !selectedSkills.includes(val)) setSelectedSkills(prev => [...prev, val]);
+    setSkillInput("");
   };
 
   const inputStyle = (field) => ({
@@ -94,9 +152,7 @@ function Profile() {
   };
 
   const fields = [
-    { label: "Preferred Role", value: preferredRole, setter: setPreferredRole, placeholder: "e.g. Frontend Developer", id: "preferredRole" },
     { label: "Preferred Location", value: preferredLocation, setter: setPreferredLocation, placeholder: "e.g. India, USA, Remote", id: "preferredLocation" },
-    { label: "Skills (comma separated)", value: skills, setter: setSkills, placeholder: "React, Node.js, Python...", id: "skills" },
     { label: "Mobile Number", value: mobile, setter: setMobile, placeholder: "+91 98765 43210", id: "mobile" },
     { label: "Past Experience", value: experience, setter: setExperience, placeholder: "e.g. 2 years at TCS", id: "experience" },
     { label: "Qualification", value: qualification, setter: setQualification, placeholder: "e.g. B.Tech Computer Science", id: "qualification" },
@@ -175,6 +231,52 @@ function Profile() {
           font-family: 'DM Sans', sans-serif;
           font-size: 13px; color: #444;
         }
+
+
+        .multi-section { margin-bottom: 0; grid-column: 1 / -1; }
+        .multi-section-label {
+          display: block; font-size: 11px; font-weight: 600;
+          letter-spacing: 0.08em; color: #555; text-transform: uppercase;
+          margin-bottom: 8px; font-family: 'DM Sans', sans-serif;
+        }
+        .multi-custom-input { display: flex; gap: 8px; margin-bottom: 10px; }
+        .multi-custom-input input {
+          flex: 1; padding: 10px 14px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 8px; color: white;
+          font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none;
+        }
+        .multi-custom-input input:focus { border-color: #6c63ff; }
+        .multi-add-btn {
+          padding: 10px 16px; background: rgba(108,99,255,0.15);
+          border: 1px solid rgba(108,99,255,0.3); border-radius: 8px;
+          color: #a09bff; font-size: 13px; font-weight: 600;
+          font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
+        }
+        .multi-add-btn:hover { background: rgba(108,99,255,0.25); }
+        .chips-wrap { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; min-height: 32px; }
+        .chip-selected {
+          display: inline-flex; align-items: center; gap: 5px;
+          padding: 5px 12px; background: rgba(108,99,255,0.15);
+          border: 1px solid rgba(108,99,255,0.35); border-radius: 100px;
+          font-size: 12px; font-weight: 500; color: #a09bff;
+          font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
+        }
+        .chip-selected:hover { background: rgba(255,80,80,0.1); border-color: rgba(255,80,80,0.3); color: #ff6b6b; }
+        .chip-option {
+          display: inline-flex; padding: 5px 12px;
+          background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 100px; font-size: 12px; color: #555;
+          font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s;
+        }
+        .chip-option:hover { background: rgba(108,99,255,0.1); border-color: rgba(108,99,255,0.25); color: #a09bff; }
+        .options-scroll {
+          max-height: 120px; overflow-y: auto;
+          display: flex; flex-wrap: wrap; gap: 7px; padding: 4px 2px;
+        }
+        .options-scroll::-webkit-scrollbar { width: 4px; }
+        .options-scroll::-webkit-scrollbar-thumb { background: rgba(108,99,255,0.3); border-radius: 4px; }
 
         .skills-preview {
           display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;
@@ -307,6 +409,53 @@ function Profile() {
           <div className="divider" />
 
           <div style={{ display: "flex", alignItems: "center" }}>
+
+            {/* Preferred Role Multi-Select */}
+            <div className="multi-section">
+              <label className="multi-section-label">Preferred Role(s)</label>
+              {preferredRole.length > 0 && (
+                <div className="chips-wrap">
+                  {preferredRole.map(r => (
+                    <span key={r} className="chip-selected" onClick={() => toggleRole(r)}>{r} ✕</span>
+                  ))}
+                </div>
+              )}
+              <div className="multi-custom-input">
+                <input placeholder="Type a custom role..." value={roleInput}
+                  onChange={e => setRoleInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && addCustomRole()} />
+                <button className="multi-add-btn" onClick={addCustomRole}>+ Add</button>
+              </div>
+              <div className="options-scroll">
+                {JOB_ROLES.filter(r => !preferredRole.includes(r)).map(r => (
+                  <span key={r} className="chip-option" onClick={() => toggleRole(r)}>+ {r}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Skills Multi-Select */}
+            <div className="multi-section">
+              <label className="multi-section-label">Skills</label>
+              {selectedSkills.length > 0 && (
+                <div className="chips-wrap">
+                  {selectedSkills.map(s => (
+                    <span key={s} className="chip-selected" onClick={() => toggleSkill(s)}>{s} ✕</span>
+                  ))}
+                </div>
+              )}
+              <div className="multi-custom-input">
+                <input placeholder="Type a custom skill..." value={skillInput}
+                  onChange={e => setSkillInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && addCustomSkill()} />
+                <button className="multi-add-btn" onClick={addCustomSkill}>+ Add</button>
+              </div>
+              <div className="options-scroll">
+                {SKILLS_LIST.filter(s => !selectedSkills.includes(s)).map(s => (
+                  <span key={s} className="chip-option" onClick={() => toggleSkill(s)}>+ {s}</span>
+                ))}
+              </div>
+            </div>
+
             <button className="save-btn" onClick={handleSave} disabled={loading}>
               {loading ? "Saving..." : "Save Changes →"}
             </button>

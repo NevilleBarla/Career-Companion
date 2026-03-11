@@ -13,6 +13,7 @@ function Navbar({ sidebarOpen, toggleSidebar }) {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("resumeAnalysis");
+    localStorage.removeItem("availableJobsCache");
     window.location.href = "/login";
   };
 
