@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import BASE_URL from "../../config";
+import BASE_URL from "../config";
 import { useNavigate, Link } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";

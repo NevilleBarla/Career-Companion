@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import BASE_URL from "../../config";
+import BASE_URL from "../config";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 
 function Register() {
