@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import BASE_URL from "../../config";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 
 function Register() {
@@ -54,7 +55,7 @@ function Register() {
 
     setLoading(true);
     try {
-      await axios.post("http://localhost:8000/api/auth/register", {
+      await axios.post(`${BASE_URL}/api/auth/register`, {
         name,
         email,
         password,

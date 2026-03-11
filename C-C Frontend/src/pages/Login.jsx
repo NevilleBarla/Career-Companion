@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import BASE_URL from "../../config";
 import { useNavigate, Link } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
@@ -17,7 +18,7 @@ function Login() {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.post("http://localhost:8000/api/auth/login", {
+      const res = await axios.post(`${BASE_URL}/api/auth/login`, {
         email,
         password,
       });
@@ -319,7 +320,7 @@ function Login() {
                 const user = jwtDecode(credentialResponse.credential);
                 try {
                   const res = await axios.post(
-                    "http://localhost:8000/api/auth/google",
+                    `${BASE_URL}/api/auth/google`,
                     { email: user.email, name: user.name }
                   );
                   if (res.data.token) {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import BASE_URL from "../../../config";
 
 function AvailableJobs() {
   const [jobs, setJobs] = useState([]);
@@ -14,7 +15,7 @@ function AvailableJobs() {
   useEffect(() => {
     const fetchUserLocation = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/api/auth/me", {
+        const res = await axios.get(`${BASE_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const loc = res.data.preferredLocation || "";
@@ -33,11 +34,12 @@ function AvailableJobs() {
       setLoading(true);
       try {
         const res = await axios.get(
-          `http://localhost:8000/api/jobs/external?location=${encodeURIComponent(location)}`
+          `${BASE_URL}/api/jobs/external?location=${encodeURIComponent(location)}`
         );
         setJobs(res.data);
       } catch (error) {
         console.error("Failed to fetch jobs", error);
+
       } finally {
         setLoading(false);
       }

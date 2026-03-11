@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import BASE_URL from "../../config";
 
 function Navbar({ sidebarOpen, toggleSidebar }) {
   const [unseenCount, setUnseenCount] = useState(0);
@@ -16,7 +17,7 @@ function Navbar({ sidebarOpen, toggleSidebar }) {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/notifications", {
+      const res = await axios.get(`${BASE_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotifications(res.data);
@@ -29,7 +30,7 @@ function Navbar({ sidebarOpen, toggleSidebar }) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/api/auth/me", {
+        const res = await axios.get(`${BASE_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserName(res.data.name || "");
@@ -47,7 +48,7 @@ function Navbar({ sidebarOpen, toggleSidebar }) {
       await fetchNotifications();
       try {
         await axios.put(
-          "http://localhost:8000/api/notifications/mark-all-seen",
+          `${BASE_URL}/api/notifications/mark-all-seen`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );

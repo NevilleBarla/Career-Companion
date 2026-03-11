@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import BASE_URL from "../../../config";
 
 function Profile() {
   const [user, setUser] = useState(null);
@@ -20,7 +21,7 @@ function Profile() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/api/auth/me", {
+        const res = await axios.get(`${BASE_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const u = res.data;
@@ -45,7 +46,7 @@ function Profile() {
     setMessage({ text: "", type: "" });
     try {
       await axios.put(
-        "http://localhost:8000/api/user/profile",
+        `${BASE_URL}/api/user/profile`,
         {
           preferredRole,
           preferredLocation,

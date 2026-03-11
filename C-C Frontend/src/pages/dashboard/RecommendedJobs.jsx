@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import BASE_URL from "../../../config";
 
 function RecommendedJobs() {
   const [jobs, setJobs] = useState([]);
@@ -11,7 +12,7 @@ function RecommendedJobs() {
     const fetchJobs = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:8000/api/jobs/recommended",
+          `${BASE_URL}/api/jobs/recommended`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setJobs(res.data);
