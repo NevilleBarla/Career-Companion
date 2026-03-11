@@ -34,4 +34,25 @@ router.delete("/delete", deleteJob);
 router.get("/recommended", authMiddleware, getRecommendedJobs);
 
 
+
+// Logo proxy — fetches company logo server-side to avoid CORS/rate-limit blocks
+const axios = require("axios");
+router.get("/logo", async (req, res) => {
+  const { domain } = req.query;
+  if (!domain) return res.status(400).send("domain required");
+  try {
+    const response = await axios.get(`https://logo.clearbit.com/${domain}`, {
+      responseType: "arraybuffer",
+      timeout: 4000,
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; CareerCompanion/1.0)" },
+    });
+    const contentType = response.headers["content-type"] || "image/png";
+    res.set("Content-Type", contentType);
+    res.set("Cache-Control", "public, max-age=86400");
+    res.send(response.data);
+  } catch (err) {
+    res.status(404).send("Logo not found");
+  }
+});
+
 module.exports = router;
