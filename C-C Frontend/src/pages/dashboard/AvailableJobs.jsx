@@ -157,24 +157,6 @@ function AvailableJobs() {
   const handleLocationSearch = () => { setLocation(locationInput); fetchJobs(locationInput); };
   const handleRefresh = () => fetchJobs(location);
 
-  const trackJob = async (job, e) => {
-    e.stopPropagation();
-    const token = localStorage.getItem("token");
-    try {
-      await axios.post(`${BASE_URL}/api/jobs/add`, {
-        company: job.company,
-        role: job.role,
-        location: job.location || "",
-        applyLink: job.applyLink || "",
-        source: job.source || "External",
-        status: "Applied",
-        appliedDate: new Date().toISOString().split("T")[0],
-      }, { headers: { Authorization: `Bearer ${token}` } });
-      alert(`✅ "${job.role}" at ${job.company} added to your tracker!`);
-    } catch (err) {
-      alert("Failed to track job. Please try again.");
-    }
-  };
   const formatLastFetched = (ts) => {
     if (!ts) return null;
     return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -673,15 +655,9 @@ function AvailableJobs() {
                   {job.source && <span className="source-badge">{job.source}</span>}
                 </div>
 
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button className="apply-btn" style={{ flex: 1 }} onClick={() => window.open(job.applyLink, "_blank")}>
-                    Apply Now →
-                  </button>
-                  <button className="apply-btn" style={{ flex: "0 0 auto", background: "rgba(108,99,255,0.15)", border: "1px solid rgba(108,99,255,0.3)", color: "#a09bff", fontSize: "12px", padding: "10px 12px" }}
-                    onClick={(e) => trackJob(job, e)} title="Add to Application Tracker">
-                    📊 Track
-                  </button>
-                </div>
+                <button className="apply-btn" onClick={() => window.open(job.applyLink, "_blank")}>
+                  Apply Now →
+                </button>
               </div>
             ))}
           </div>

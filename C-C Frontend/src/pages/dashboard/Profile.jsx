@@ -17,6 +17,8 @@ function Profile() {
   const [message, setMessage] = useState({ text: "", type: "" });
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState("");
+  const [original, setOriginal] = useState(null); // snapshot of saved state
+  const [isDirty, setIsDirty] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -36,6 +38,18 @@ function Profile() {
         setQualification(u.qualification || "");
         setGender(u.gender || "");
         setAge(u.age || "");
+        // Save original snapshot for dirty detection
+        setOriginal({
+          preferredRole: u.preferredRole ? u.preferredRole.split(",").map(s => s.trim()).filter(Boolean) : [],
+          preferredLocation: u.preferredLocation || "",
+          selectedSkills: u.skills || [],
+          mobile: u.mobile || "",
+          experience: u.experience || "",
+          qualification: u.qualification || "",
+          gender: u.gender || "",
+          age: String(u.age || ""),
+        });
+        setIsDirty(false);
       } catch (error) {
         console.error(error);
       }
@@ -62,6 +76,8 @@ function Profile() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setMessage({ text: "Profile updated successfully!", type: "success" });
+      setIsDirty(false);
+      setOriginal({ preferredRole, preferredLocation, selectedSkills, mobile, experience, qualification, gender, age: String(age) });
     } catch (error) {
       setMessage({ text: "Failed to update profile. Try again.", type: "error" });
     } finally {
@@ -102,27 +118,55 @@ function Profile() {
   ];
 
   const toggleRole = (role) => {
-    setPreferredRole(prev =>
-      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
-    );
+    setPreferredRole(prev => {
+      const next = prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role];
+      if (original) setIsDirty(JSON.stringify(next) !== JSON.stringify(original.preferredRole));
+      return next;
+    });
   };
 
   const toggleSkill = (skill) => {
-    setSelectedSkills(prev =>
-      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
-    );
+    setSelectedSkills(prev => {
+      const next = prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill];
+      if (original) setIsDirty(JSON.stringify(next) !== JSON.stringify(original.selectedSkills));
+      return next;
+    });
   };
 
   const addCustomRole = () => {
     const val = roleInput.trim();
-    if (val && !preferredRole.includes(val)) setPreferredRole(prev => [...prev, val]);
+    if (val && !preferredRole.includes(val)) {
+      setPreferredRole(prev => { const next = [...prev, val]; if (original) setIsDirty(JSON.stringify(next) !== JSON.stringify(original.preferredRole)); return next; });
+    }
     setRoleInput("");
   };
 
   const addCustomSkill = () => {
     const val = skillInput.trim();
-    if (val && !selectedSkills.includes(val)) setSelectedSkills(prev => [...prev, val]);
+    if (val && !selectedSkills.includes(val)) {
+      setSelectedSkills(prev => { const next = [...prev, val]; if (original) setIsDirty(JSON.stringify(next) !== JSON.stringify(original.selectedSkills)); return next; });
+    }
     setSkillInput("");
+  };
+
+  // Mark dirty whenever any field changes vs original
+  const checkDirty = (field, value) => {
+    if (!original) return;
+    const current = {
+      preferredRole, preferredLocation, selectedSkills,
+      mobile, experience, qualification, gender, age: String(age),
+      [field]: value,
+    };
+    const changed =
+      JSON.stringify(current.preferredRole) !== JSON.stringify(original.preferredRole) ||
+      JSON.stringify(current.selectedSkills) !== JSON.stringify(original.selectedSkills) ||
+      current.preferredLocation !== original.preferredLocation ||
+      current.mobile !== original.mobile ||
+      current.experience !== original.experience ||
+      current.qualification !== original.qualification ||
+      current.gender !== original.gender ||
+      String(current.age) !== String(original.age);
+    setIsDirty(changed);
   };
 
   const inputStyle = (field) => ({
@@ -272,7 +316,7 @@ function Profile() {
         }
         .chip-option:hover { background: rgba(108,99,255,0.1); border-color: rgba(108,99,255,0.25); color: #a09bff; }
         .options-scroll {
-          max-height: 120px; overflow-y: auto;
+          max-height: 150px; overflow-y: auto;
           display: flex; flex-wrap: wrap; gap: 7px; padding: 4px 2px;
         }
         .options-scroll::-webkit-scrollbar { width: 4px; }
@@ -300,6 +344,20 @@ function Profile() {
 
         .field-group.full-width { grid-column: 1 / -1; }
 
+        .save-btn-wrap {
+          margin-top: 28px;
+          padding-top: 20px;
+          border-top: 1px solid rgba(255,255,255,0.06);
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 12px;
+        }
+        .dirty-hint {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 12px;
+          color: #ffd166;
+        }
         .save-btn {
           padding: 14px 32px;
           background: linear-gradient(135deg, #6c63ff, #5a54e8);
@@ -315,7 +373,7 @@ function Profile() {
           box-shadow: 0 8px 24px rgba(108,99,255,0.35);
         }
 
-        .save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .save-btn:disabled { opacity: 0.35; cursor: not-allowed; filter: grayscale(0.4); }
 
         .message-box {
           display: inline-flex; align-items: center; gap: 8px;
@@ -396,7 +454,7 @@ function Profile() {
                 <input
                   type={field.type || "text"}
                   value={field.value}
-                  onChange={(e) => field.setter(e.target.value)}
+                  onChange={(e) => { field.setter(e.target.value); checkDirty(field.id, e.target.value); }}
                   onFocus={() => setFocusedField(field.id)}
                   onBlur={() => setFocusedField("")}
                   placeholder={field.placeholder}
@@ -408,63 +466,69 @@ function Profile() {
 
           <div className="divider" />
 
-          <div style={{ display: "flex", alignItems: "center" }}>
-
-            {/* Preferred Role Multi-Select */}
-            <div className="multi-section">
-              <label className="multi-section-label">Preferred Role(s)</label>
-              {preferredRole.length > 0 && (
-                <div className="chips-wrap">
-                  {preferredRole.map(r => (
-                    <span key={r} className="chip-selected" onClick={() => toggleRole(r)}>{r} ✕</span>
-                  ))}
-                </div>
-              )}
-              <div className="multi-custom-input">
-                <input placeholder="Type a custom role..." value={roleInput}
-                  onChange={e => setRoleInput(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && addCustomRole()} />
-                <button className="multi-add-btn" onClick={addCustomRole}>+ Add</button>
-              </div>
-              <div className="options-scroll">
-                {JOB_ROLES.filter(r => !preferredRole.includes(r)).map(r => (
-                  <span key={r} className="chip-option" onClick={() => toggleRole(r)}>+ {r}</span>
+          {/* Preferred Role Multi-Select — full width */}
+          <div className="multi-section" style={{ marginBottom: "24px" }}>
+            <label className="multi-section-label">Preferred Role(s)</label>
+            {preferredRole.length > 0 && (
+              <div className="chips-wrap">
+                {preferredRole.map(r => (
+                  <span key={r} className="chip-selected" onClick={() => toggleRole(r)}>{r} ✕</span>
                 ))}
               </div>
+            )}
+            <div className="multi-custom-input">
+              <input placeholder="Type a custom role and press Enter..."
+                value={roleInput}
+                onChange={e => setRoleInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && addCustomRole()} />
+              <button className="multi-add-btn" onClick={addCustomRole}>+ Add</button>
             </div>
+            <div className="options-scroll">
+              {JOB_ROLES.filter(r => !preferredRole.includes(r)).map(r => (
+                <span key={r} className="chip-option" onClick={() => toggleRole(r)}>+ {r}</span>
+              ))}
+            </div>
+          </div>
 
-            {/* Skills Multi-Select */}
-            <div className="multi-section">
-              <label className="multi-section-label">Skills</label>
-              {selectedSkills.length > 0 && (
-                <div className="chips-wrap">
-                  {selectedSkills.map(s => (
-                    <span key={s} className="chip-selected" onClick={() => toggleSkill(s)}>{s} ✕</span>
-                  ))}
-                </div>
-              )}
-              <div className="multi-custom-input">
-                <input placeholder="Type a custom skill..." value={skillInput}
-                  onChange={e => setSkillInput(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && addCustomSkill()} />
-                <button className="multi-add-btn" onClick={addCustomSkill}>+ Add</button>
-              </div>
-              <div className="options-scroll">
-                {SKILLS_LIST.filter(s => !selectedSkills.includes(s)).map(s => (
-                  <span key={s} className="chip-option" onClick={() => toggleSkill(s)}>+ {s}</span>
+          <div className="divider" />
+
+          {/* Skills Multi-Select — full width */}
+          <div className="multi-section" style={{ marginBottom: "8px" }}>
+            <label className="multi-section-label">Skills</label>
+            {selectedSkills.length > 0 && (
+              <div className="chips-wrap">
+                {selectedSkills.map(s => (
+                  <span key={s} className="chip-selected" onClick={() => toggleSkill(s)}>{s} ✕</span>
                 ))}
               </div>
+            )}
+            <div className="multi-custom-input">
+              <input placeholder="Type a custom skill and press Enter..."
+                value={skillInput}
+                onChange={e => setSkillInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && addCustomSkill()} />
+              <button className="multi-add-btn" onClick={addCustomSkill}>+ Add</button>
             </div>
+            <div className="options-scroll">
+              {SKILLS_LIST.filter(s => !selectedSkills.includes(s)).map(s => (
+                <span key={s} className="chip-option" onClick={() => toggleSkill(s)}>+ {s}</span>
+              ))}
+            </div>
+          </div>
 
-            <button className="save-btn" onClick={handleSave} disabled={loading}>
-              {loading ? "Saving..." : "Save Changes →"}
-            </button>
+          {/* Save Button — full width at the very bottom */}
+          <div className="save-btn-wrap">
+            {isDirty && <span className="dirty-hint">● Unsaved changes</span>}
             {message.text && (
-              <div className={`message-box ${message.type}`}>
+              <div className={`message-box ${message.type}`} style={{ margin: 0 }}>
                 {message.type === "success" ? "✅" : "⚠"} {message.text}
               </div>
             )}
+            <button className="save-btn" onClick={handleSave} disabled={loading || !isDirty}>
+              {loading ? "Saving..." : "Save Changes →"}
+            </button>
           </div>
+
         </div>
       </div>
     </>
