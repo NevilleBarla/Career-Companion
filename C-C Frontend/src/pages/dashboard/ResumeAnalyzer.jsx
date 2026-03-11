@@ -1,15 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import BASE_URL from "../../config";
 
 function ResumeAnalyzer() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [analysis, setAnalysis] = useState(null);
-  const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState("");
+
+  // Load analysis from localStorage so it persists across navigation
+  const [analysis, setAnalysis] = useState(() => {
+    try {
+      const saved = localStorage.getItem("resumeAnalysis");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
   const token = localStorage.getItem("token");
+
+  // Save analysis to localStorage whenever it changes
+  useEffect(() => {
+    if (analysis) {
+      localStorage.setItem("resumeAnalysis", JSON.stringify(analysis));
+    } else {
+      localStorage.removeItem("resumeAnalysis");
+    }
+  }, [analysis]);
 
   const handleFile = (selectedFile) => {
     if (selectedFile && selectedFile.type === "application/pdf") {
@@ -59,10 +77,17 @@ function ResumeAnalyzer() {
     }
   };
 
+  const handleReset = () => {
+    setAnalysis(null);
+    setFile(null);
+    setError("");
+    localStorage.removeItem("resumeAnalysis");
+  };
+
   const getScoreColor = (score) => {
-    if (score >= 80) return { color: "#6fffc0", bg: "rgba(99,255,180,0.1)", border: "rgba(99,255,180,0.2)" };
-    if (score >= 60) return { color: "#ffd166", bg: "rgba(255,209,102,0.1)", border: "rgba(255,209,102,0.2)" };
-    return { color: "#ff6b6b", bg: "rgba(255,80,80,0.1)", border: "rgba(255,80,80,0.2)" };
+    if (score >= 80) return { color: "#6fffc0", bg: "rgba(99,255,180,0.1)" };
+    if (score >= 60) return { color: "#ffd166", bg: "rgba(255,209,102,0.1)" };
+    return { color: "#ff6b6b", bg: "rgba(255,80,80,0.1)" };
   };
 
   const getScoreLabel = (score) => {
@@ -101,13 +126,10 @@ function ResumeAnalyzer() {
           font-size: 13px; color: #444; margin-bottom: 28px;
         }
 
-        /* Upload Area */
         .upload-area {
           border: 2px dashed rgba(255,255,255,0.1);
-          border-radius: 18px;
-          padding: 48px 32px;
-          text-align: center;
-          cursor: pointer;
+          border-radius: 18px; padding: 48px 32px;
+          text-align: center; cursor: pointer;
           transition: all 0.25s ease;
           background: rgba(255,255,255,0.02);
           margin-bottom: 20px;
@@ -137,20 +159,16 @@ function ResumeAnalyzer() {
         }
 
         .upload-btn {
-          display: inline-block;
-          padding: 9px 20px;
+          display: inline-block; padding: 9px 20px;
           background: rgba(108,99,255,0.15);
           border: 1px solid rgba(108,99,255,0.3);
           border-radius: 8px;
           font-family: 'DM Sans', sans-serif;
           font-size: 13px; font-weight: 600;
-          color: #a09bff; cursor: pointer;
-          transition: all 0.2s;
+          color: #a09bff; cursor: pointer; transition: all 0.2s;
         }
 
-        .upload-btn:hover {
-          background: rgba(108,99,255,0.25);
-        }
+        .upload-btn:hover { background: rgba(108,99,255,0.25); }
 
         .file-selected {
           display: flex; align-items: center;
@@ -166,8 +184,7 @@ function ResumeAnalyzer() {
           font-size: 15px; font-weight: 600;
           font-family: 'DM Sans', sans-serif;
           border-radius: 12px; cursor: pointer;
-          transition: all 0.25s ease;
-          margin-bottom: 28px;
+          transition: all 0.25s ease; margin-bottom: 28px;
         }
 
         .analyze-btn:hover:not(:disabled) {
@@ -182,11 +199,9 @@ function ResumeAnalyzer() {
           border: 1px solid rgba(255,80,80,0.2);
           border-radius: 10px; padding: 12px 16px;
           font-family: 'DM Sans', sans-serif;
-          font-size: 13px; color: #ff6b6b;
-          margin-bottom: 20px;
+          font-size: 13px; color: #ff6b6b; margin-bottom: 20px;
         }
 
-        /* Loading */
         .loading-box {
           text-align: center; padding: 48px;
           background: rgba(255,255,255,0.02);
@@ -197,15 +212,12 @@ function ResumeAnalyzer() {
         .spinner {
           width: 44px; height: 44px;
           border: 3px solid rgba(108,99,255,0.2);
-          border-top-color: #6c63ff;
-          border-radius: 50%;
+          border-top-color: #6c63ff; border-radius: 50%;
           animation: spin 0.8s linear infinite;
           margin: 0 auto 16px;
         }
 
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .loading-title {
           font-family: 'Syne', sans-serif;
@@ -218,7 +230,6 @@ function ResumeAnalyzer() {
           font-size: 13px; color: #444;
         }
 
-        /* Results */
         .results { animation: fadeUp 0.5s ease forwards; }
 
         .score-card {
@@ -229,18 +240,15 @@ function ResumeAnalyzer() {
         }
 
         .score-circle {
-          width: 120px; height: 120px;
-          border-radius: 50%;
+          width: 120px; height: 120px; border-radius: 50%;
           display: flex; flex-direction: column;
           align-items: center; justify-content: center;
-          margin: 0 auto 16px;
-          border: 4px solid;
+          margin: 0 auto 16px; border: 4px solid;
         }
 
         .score-number {
           font-family: 'Syne', sans-serif;
-          font-size: 36px; font-weight: 800;
-          line-height: 1;
+          font-size: 36px; font-weight: 800; line-height: 1;
         }
 
         .score-out-of {
@@ -261,8 +269,7 @@ function ResumeAnalyzer() {
         }
 
         .results-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
+          display: grid; grid-template-columns: 1fr 1fr;
           gap: 16px; margin-bottom: 16px;
         }
 
@@ -286,8 +293,7 @@ function ResumeAnalyzer() {
           font-size: 13px; color: #888;
           padding: 7px 0;
           border-bottom: 1px solid rgba(255,255,255,0.04);
-          line-height: 1.5;
-          display: flex; gap: 8px;
+          line-height: 1.5; display: flex; gap: 8px;
         }
 
         .result-list li:last-child { border-bottom: none; }
@@ -295,13 +301,10 @@ function ResumeAnalyzer() {
         .skills-card {
           background: rgba(255,255,255,0.02);
           border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 16px; padding: 24px;
-          margin-bottom: 16px;
+          border-radius: 16px; padding: 24px; margin-bottom: 16px;
         }
 
-        .skills-wrap {
-          display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;
-        }
+        .skills-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 
         .skill-chip {
           padding: 5px 14px;
@@ -312,10 +315,7 @@ function ResumeAnalyzer() {
           font-size: 12px; font-weight: 500; color: #a09bff;
         }
 
-        .info-row {
-          display: flex; gap: 12px; margin-bottom: 16px;
-          flex-wrap: wrap;
-        }
+        .info-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 
         .info-badge {
           display: inline-flex; align-items: center; gap: 7px;
@@ -335,24 +335,36 @@ function ResumeAnalyzer() {
           border: 1px solid rgba(99,255,180,0.15);
           border-radius: 10px; padding: 12px 16px;
           font-family: 'DM Sans', sans-serif;
-          font-size: 13px; color: #6fffc0;
-          margin-bottom: 20px;
+          font-size: 13px; color: #6fffc0; margin-bottom: 20px;
         }
 
-        .analyze-again-btn {
+        .action-row {
+          display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;
+        }
+
+        .reset-btn {
+          padding: 10px 24px;
+          background: rgba(255,80,80,0.08);
+          border: 1px solid rgba(255,80,80,0.2);
+          color: #ff6b6b; font-size: 13px; font-weight: 600;
+          font-family: 'DM Sans', sans-serif;
+          border-radius: 10px; cursor: pointer; transition: all 0.2s;
+        }
+
+        .reset-btn:hover {
+          background: rgba(255,80,80,0.15);
+        }
+
+        .reanalyze-btn {
           padding: 10px 24px;
           background: rgba(255,255,255,0.04);
           border: 1px solid rgba(255,255,255,0.1);
           color: #888; font-size: 13px; font-weight: 500;
           font-family: 'DM Sans', sans-serif;
-          border-radius: 10px; cursor: pointer;
-          transition: all 0.2s; margin-bottom: 28px;
+          border-radius: 10px; cursor: pointer; transition: all 0.2s;
         }
 
-        .analyze-again-btn:hover {
-          background: rgba(255,255,255,0.07);
-          color: white;
-        }
+        .reanalyze-btn:hover { background: rgba(255,255,255,0.07); color: white; }
 
         @media (max-width: 640px) {
           .results-grid { grid-template-columns: 1fr; }
@@ -360,16 +372,14 @@ function ResumeAnalyzer() {
       `}</style>
 
       <div className="resume-page">
-        {/* Header */}
         <h1 className="page-title">Resume <span>Analyzer</span></h1>
         <p className="page-subtitle">
           Upload your resume and get an AI-powered score, skill extraction and improvement tips
         </p>
 
-        {/* Show upload + analyze only when no results yet */}
+        {/* Upload section — only show when no analysis */}
         {!analysis && (
           <>
-            {/* Upload Area */}
             <div
               className={`upload-area ${dragOver ? "drag-over" : ""} ${file ? "has-file" : ""}`}
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -384,7 +394,6 @@ function ResumeAnalyzer() {
                 style={{ display: "none" }}
                 onChange={(e) => handleFile(e.target.files[0])}
               />
-
               {file ? (
                 <div className="file-selected">
                   <span style={{ fontSize: "24px" }}>✅</span>
@@ -400,10 +409,8 @@ function ResumeAnalyzer() {
               )}
             </div>
 
-            {/* Error */}
             {error && <div className="error-box">⚠ {error}</div>}
 
-            {/* Analyze Button */}
             <button
               className="analyze-btn"
               onClick={handleAnalyze}
@@ -414,35 +421,34 @@ function ResumeAnalyzer() {
           </>
         )}
 
-        {/* Loading State */}
+        {/* Loading */}
         {loading && (
           <div className="loading-box">
             <div className="spinner" />
             <div className="loading-title">Analyzing your resume...</div>
-            <div className="loading-subtitle">
-              Groq AI is reading your resume and generating insights
-            </div>
+            <div className="loading-subtitle">Groq AI is reading your resume and generating insights</div>
           </div>
         )}
 
-        {/* Results */}
+        {/* Results — persists across navigation */}
         {analysis && !loading && (
           <div className="results">
 
-            {/* Skills saved notice */}
             <div className="saved-notice">
               ✅ Your skills have been automatically saved to your profile and will improve your job recommendations!
             </div>
 
-            {/* Analyze Again button */}
-            <button
-              className="analyze-again-btn"
-              onClick={() => { setAnalysis(null); setFile(null); setError(""); }}
-            >
-              ← Analyze Another Resume
-            </button>
+            {/* Action buttons */}
+            <div className="action-row">
+              <button className="reanalyze-btn" onClick={() => { setAnalysis(null); setFile(null); setError(""); localStorage.removeItem("resumeAnalysis"); }}>
+                ← Analyze Another Resume
+              </button>
+              <button className="reset-btn" onClick={handleReset}>
+                🗑 Reset Results
+              </button>
+            </div>
 
-            {/* Score Card */}
+            {/* Score */}
             <div className="score-card">
               <div
                 className="score-circle"
@@ -460,14 +466,14 @@ function ResumeAnalyzer() {
               <p className="score-summary">{analysis.summary}</p>
             </div>
 
-            {/* Info Row */}
+            {/* Info */}
             <div className="info-row">
               {analysis.experienceLevel && (
                 <div className="info-badge">
                   🎯 Experience Level: <strong>{analysis.experienceLevel}</strong>
                 </div>
               )}
-              {analysis.topRoles && analysis.topRoles.length > 0 && (
+              {analysis.topRoles?.length > 0 && (
                 <div className="info-badge">
                   💼 Best Roles: <strong>{analysis.topRoles.join(", ")}</strong>
                 </div>
@@ -484,7 +490,6 @@ function ResumeAnalyzer() {
                   ))}
                 </ul>
               </div>
-
               <div className="result-card">
                 <div className="result-card-title">⚠️ Weaknesses</div>
                 <ul className="result-list">

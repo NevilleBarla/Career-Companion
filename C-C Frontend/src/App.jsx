@@ -5,27 +5,27 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-function App() {
-  const token = localStorage.getItem("token");
+// Helper that checks token fresh on every render
+const isLoggedIn = () => !!localStorage.getItem("token");
 
+function App() {
   return (
     <BrowserRouter>
-
       <Routes>
 
         {/* Landing Page */}
         <Route path="/" element={<Welcome />} />
 
-        {/* Login */}
+        {/* Login — always show login page, never auto-redirect */}
         <Route
           path="/login"
-          element={token ? <Navigate to="/dashboard" /> : <Login />}
+          element={isLoggedIn() ? <Navigate to="/dashboard" /> : <Login />}
         />
 
         {/* Register */}
         <Route
           path="/register"
-          element={token ? <Navigate to="/dashboard" /> : <Register />}
+          element={isLoggedIn() ? <Navigate to="/dashboard" /> : <Register />}
         />
 
         {/* Protected Dashboard */}
@@ -39,7 +39,6 @@ function App() {
         />
 
       </Routes>
-
     </BrowserRouter>
   );
 }

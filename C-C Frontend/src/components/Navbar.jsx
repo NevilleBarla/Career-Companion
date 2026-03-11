@@ -12,6 +12,7 @@ function Navbar({ sidebarOpen, toggleSidebar }) {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("resumeAnalysis");
     window.location.href = "/login";
   };
 
