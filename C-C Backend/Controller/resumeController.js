@@ -2,9 +2,10 @@ const pdfParse = require("pdf-parse");
 const Groq = require("groq-sdk");
 const User = require("../models/User");
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
 
 exports.analyzeResume = async (req, res) => {
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   try {
 
     // Check file was uploaded
