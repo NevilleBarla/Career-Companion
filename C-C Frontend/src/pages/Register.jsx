@@ -132,7 +132,7 @@ function Register() {
     { label: "Skills", value: skills, setter: setSkills, placeholder: "React, Node.js, Python...", id: "skills", type: "text" },
     { label: "Past Experience", value: experience, setter: setExperience, placeholder: "e.g. 2 years at TCS", id: "experience", type: "text" },
     { label: "Qualification", value: qualification, setter: setQualification, placeholder: "e.g. B.Tech Computer Science", id: "qualification", type: "text" },
-    { label: "Gender", value: gender, setter: setGender, placeholder: "e.g. Male / Female", id: "gender", type: "text" },
+
     { label: "Age", value: age, setter: setAge, placeholder: "e.g. 22", id: "age", type: "number" },
   ];
 
@@ -290,6 +290,7 @@ function Register() {
 
         input::placeholder { color: #3a3a3a; }
         input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+        select option { background: #1a1a2e; color: white; }
 
         @media (max-width: 600px) {
           .register-card { padding: 32px 24px; }
@@ -349,6 +350,37 @@ function Register() {
                 )}
               </div>
             ))}
+
+            {/* Gender Dropdown */}
+            <div className="field-group" key="gender">
+              <label style={labelStyle}>Gender</label>
+              <select
+                value={gender}
+                onChange={(e) => {
+                  setGender(e.target.value);
+                  if (fieldErrors.gender) {
+                    setFieldErrors((prev) => ({ ...prev, gender: "" }));
+                  }
+                }}
+                style={{
+                  ...inputStyle("gender"),
+                  appearance: "none",
+                  WebkitAppearance: "none",
+                  cursor: "pointer",
+                  color: gender ? "white" : "#3a3a3a",
+                }}
+              >
+                <option value="" disabled>Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Others">Others</option>
+                <option value="Rather not say">Rather not say</option>
+              </select>
+              {fieldErrors.gender && (
+                <span className="field-error">⚠ {fieldErrors.gender}</span>
+              )}
+            </div>
+
           </div>
 
           {/* Register Button */}
