@@ -1,4 +1,5 @@
-require("dotenv").config();
+require("dotenv").config({ path: __dirname + "/.env" });
+console.log("GROQ:", process.env.GROQ_API_KEY ? "✅ Loaded" : "❌ Missing");
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");

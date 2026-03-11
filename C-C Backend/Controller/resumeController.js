@@ -5,7 +5,7 @@ const User = require("../models/User");
 
 
 exports.analyzeResume = async (req, res) => {
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   try {
 
     // Check file was uploaded
