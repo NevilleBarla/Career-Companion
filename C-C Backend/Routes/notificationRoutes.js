@@ -1,25 +1,13 @@
 const express = require("express");
 const router = express.Router();
+const authMiddleware = require("../Middleware/authMiddleware");
+const { getNotifications, getUnseenCount, markAsSeen, markAllSeen } = require("../Controller/notificationController");
 
-const {
-  addNotification,
-  getNotifications,
-  getUnseenCount,
-  markAsSeen
-} = require("../Controller/notificationController");
+router.use(authMiddleware);
 
-
-
-// Add notification
-router.post("/add", addNotification);
-
-// Get all notifications
 router.get("/all", getNotifications);
-
-// Get unseen count
 router.get("/unseen-count", getUnseenCount);
-
-// Mark notification as seen
 router.put("/seen", markAsSeen);
+router.put("/seen-all", markAllSeen);
 
 module.exports = router;

@@ -1,58 +1,48 @@
 const Notification = require("../models/Notification");
 
-// Add Notification
-exports.addNotification = async (req, res) => {
-  try {
-    const notification = new Notification(req.body);
-    await notification.save();
-
-    res.json({
-      message: "Notification added",
-      notification
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error adding notification"
-    });
-  }
-};
-
-// Get All Notifications
+// Get all notifications for user
 exports.getNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find()
-      .sort({ createdAt: -1 });
-
+    const userId = req.user.id;
+    const notifications = await Notification.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(50);
     res.json(notifications);
   } catch (error) {
-    res.status(500).json({
-      message: "Error fetching notifications"
-    });
+    res.status(500).json({ message: "Error fetching notifications" });
   }
 };
 
-// Get Unseen Count
+// Get unseen count
 exports.getUnseenCount = async (req, res) => {
   try {
-    const count = await Notification.countDocuments({ seen: false });
+    const userId = req.user.id;
+    const count = await Notification.countDocuments({ userId, seen: false });
     res.json({ unseenCount: count });
   } catch (error) {
-    res.status(500).json({
-      message: "Error counting notifications"
-    });
+    res.status(500).json({ message: "Error counting notifications" });
   }
 };
 
-// Mark as Seen
+// Mark one as seen
 exports.markAsSeen = async (req, res) => {
-  const { id } = req.body;
-
   try {
-    await Notification.findByIdAndUpdate(id, { seen: true });
-    res.json({ message: "Notification marked as seen" });
+    const userId = req.user.id;
+    const { id } = req.body;
+    await Notification.findOneAndUpdate({ _id: id, userId }, { seen: true });
+    res.json({ message: "Marked as seen" });
   } catch (error) {
-    res.status(500).json({
-      message: "Error updating notification"
-    });
+    res.status(500).json({ message: "Error updating notification" });
+  }
+};
+
+// Mark all as seen
+exports.markAllSeen = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await Notification.updateMany({ userId, seen: false }, { seen: true });
+    res.json({ message: "All marked as seen" });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating notifications" });
   }
 };
