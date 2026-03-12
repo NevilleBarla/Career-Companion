@@ -17,6 +17,8 @@ function RecommendedJobs() {
   const [showFilters, setShowFilters] = useState(false);
   const [minScore, setMinScore] = useState(40);
   const [filterSource, setFilterSource] = useState("All");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [locationInput, setLocationInput] = useState("");
   const [sortBy, setSortBy] = useState("score");
   const [expandedBreakdown, setExpandedBreakdown] = useState(null);
 
@@ -28,6 +30,10 @@ function RecommendedJobs() {
       try {
         const res = await axios.get(`${BASE_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
         setUser(res.data);
+        const loc = res.data.preferredLocation || "";
+        setLocationInput(loc);
+        // Load cached location filter if exists
+        if (!localStorage.getItem("recommendedJobsCache")) setLocationFilter(loc);
       } catch (err) { console.error(err); }
     };
     fetchUser();
@@ -61,6 +67,16 @@ function RecommendedJobs() {
     .filter(j => j.matchScore >= minScore)
     .filter(j => filterSource === "All" || j.source === filterSource)
     .filter(j => !search || j.role?.toLowerCase().includes(search.toLowerCase()) || j.company?.toLowerCase().includes(search.toLowerCase()))
+    .filter(j => {
+      if (!locationFilter.trim()) return true;
+      const loc = locationFilter.toLowerCase().trim();
+      const jobLoc = (j.location || "").toLowerCase();
+      return jobLoc.includes(loc) ||
+        jobLoc.includes("worldwide") ||
+        jobLoc.includes("anywhere") ||
+        jobLoc.includes("remote") ||
+        jobLoc === "";
+    })
     .sort((a, b) => sortBy === "score" ? b.matchScore - a.matchScore : a.role?.localeCompare(b.role));
 
   const formatTime = (ts) => ts ? new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : null;
@@ -102,6 +118,28 @@ function RecommendedJobs() {
         .search-box:focus-within { border-color:rgba(108,99,255,0.35); }
         .search-box input { background:none; border:none; outline:none; color:white; font-family:'DM Sans',sans-serif; font-size:13px; width:100%; }
         .search-box input::placeholder { color:#333; }
+        .location-box {
+          display:flex; align-items:center; gap:8px; flex:1; min-width:160px;
+          background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+          border-radius:10px; padding:10px 14px; transition:border-color 0.2s;
+        }
+        .location-box:focus-within { border-color:rgba(99,179,255,0.35); }
+        .location-box input { background:none; border:none; outline:none; color:white; font-family:'DM Sans',sans-serif; font-size:13px; width:100%; }
+        .location-box input::placeholder { color:#333; }
+        .loc-btn {
+          padding:10px 18px; background:linear-gradient(135deg,#6c63ff,#5a54e8);
+          border:none; color:white; font-size:13px; font-weight:600;
+          font-family:'DM Sans',sans-serif; border-radius:10px; cursor:pointer;
+          transition:all 0.2s; white-space:nowrap;
+        }
+        .loc-btn:hover { box-shadow:0 4px 16px rgba(108,99,255,0.3); transform:translateY(-1px); }
+        .loc-badge {
+          display:inline-flex; align-items:center; gap:6px;
+          background:rgba(99,179,255,0.08); border:1px solid rgba(99,179,255,0.18);
+          border-radius:100px; padding:5px 12px;
+          font-family:'DM Sans',sans-serif; font-size:12px; color:#63b3ff;
+        }
+        .active-filters { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; align-items:center; }
         .refresh-btn {
           display:flex; align-items:center; gap:7px; padding:10px 16px;
           background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
@@ -263,6 +301,18 @@ function RecommendedJobs() {
             <span style={{ fontSize: "15px" }}>🔍</span>
             <input placeholder="Search role or company..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
+          {/* Location filter */}
+          <div className="location-box">
+            <span style={{ fontSize: "15px" }}>📍</span>
+            <input
+              placeholder="Filter by location..."
+              value={locationInput}
+              onChange={e => setLocationInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && setLocationFilter(locationInput)}
+            />
+          </div>
+          <button className="loc-btn" onClick={() => setLocationFilter(locationInput)}>Search →</button>
+
           <button className={`refresh-btn ${loading ? "spinning" : ""}`} onClick={fetchJobs} disabled={loading}
             title={lastFetched ? `Last fetched at ${formatTime(lastFetched)}` : "Fetch recommendations"}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -306,6 +356,17 @@ function RecommendedJobs() {
                 </select>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Active location badge */}
+        {locationFilter && (
+          <div className="active-filters">
+            <span className="loc-badge">
+              📍 {locationFilter}
+              <span style={{ cursor:"pointer", marginLeft:4, color:"#555" }}
+                onClick={() => { setLocationFilter(""); setLocationInput(""); }}>✕</span>
+            </span>
           </div>
         )}
 
